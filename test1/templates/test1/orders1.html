@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Orders List{% endblock %}
+
+{% block content %}
+<!--=========================================-->
+<h2>Orders List</h2>
+
+<form id="orders-form">
+
+    <input type="date" name="orders_date" required>
+
+    <select name="product" id="product-select" required>
+        {% for p in products %}
+        <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="sales" id="sales-select" required>
+        {% for s in sales %}
+        <option value="{{ s.id }}">{{ s.name }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="number" name="quantity" required>
+
+    <button type="submit">Add Order</button>
+
+</form>
+
+<table id="orders-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Order Date</th>
+            <th>Product</th>
+            <th>Sales</th>
+            <th>Quantity</th>
+            <th>OP</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</table>
+
+<div id="result"></div>
+
+{% endblock %}
+
+
+<!--=========================-->
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        loadOrders();
+        loadProducts();
+        loadSales();
+
+        // 新增
+        $('#orders-form').submit(function(e) {
+            e.preventDefault();  // 阻止表單默認提交行為，防止頁面重載
+            let url = '/orders/';
+            let method = 'post';
+
+            // 獲取表單數據
+            let order_date = $("input[name='orders_date']").val();
+            let product = $("select[name='product']").val();
+            let sales = $("select[name='sales']").val();
+            let quantity = $("input[name='quantity']").val();
+
+            let orderData = {
+                order_date: order_date,
+                product: product,
+                sales: sales,
+                quantity: quantity
+            };
+
+            $.ajax({
+                url: url,  // 發送請求的 URL
+                method: method,  // 使用 POST 請求
+                contentType: 'application/json',  // 設定請求內容類型
+                data: JSON.stringify(orderData),  // 發送的資料，轉為 JSON 格式
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")  // 添加 CSRF token
+                },
+                success: function(data) {
+                    $("#result").text("新增成功：" + data.order_date);  // 顯示成功訊息
+                    $("#orders-table tbody").append(addRow(data));  // 在表格中新增一行
+                    $('#orders-form')[0].reset();  // 清空表單內容
+                },
+                error: function(err) {
+                    console.log(err.responseJSON);  // 如果出錯，打印錯誤信息
+                }
+            });
+        });
+
+        // 刪除
+        $('#orders-table').on('click', '.delete-btn', function() {
+            const row = $(this).closest('tr');  // 獲取當前行
+            const orderId = row.data('id');  // 從 data-id 屬性中獲取訂單 ID
+
+            if (!orderId) {
+                console.log("未能找到訂單 ID，無法刪除");
+                return;
+            }
+            $.ajax({
+                url: `/orders/${orderId}/`,  // 使用訂單 ID 組成正確的 URL
+                method: 'DELETE',
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                success: function() {
+                    row.remove();  // 刪除表格中的該行
+                },
+                error: function(err) {
+                    console.log(err.responseJSON);
+                }
+            });
+        });
+
+
+
+        // 獲取 CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 訂單列表
+        function loadOrders() {
+            $.get('/orders/', function(data) {
+                console.log(data);
+                $("#orders-table tbody").empty();
+                data.forEach(function(order) {
+                    $("#orders-table tbody").append(addRow(order));
+                });
+            });
+        }
+
+        // 產品列表
+        function loadProducts() {
+            $.get('/products/', function(data) {
+                const select = $("select[name='product']");
+                select.empty();
+                data.forEach(function(p) {
+                    select.append(`<option value="${p.id}">${p.name}</option>`);
+                });
+            });
+        }
+
+        // 銷售列表
+        function loadSales() {
+            $.get('/sales/', function(data) {
+                const select = $("select[name='sales']");
+                select.empty();
+                data.forEach(function(s) {
+                    select.append(`<option value="${s.id}">${s.name}</option>`);
+                });
+            });
+        }
+
+        // 列出所有表
+        function addRow(order) {
+            return `
+                <tr data-id="${order.id}"><!-- 記得要加id，CRUD用的 -->
+                    <td>${order.id}</td>
+                    <td>${order.order_date}</td>
+                    <td>${order.product_name}</td>
+                    <td>${order.sales_name}</td>
+                    <td>${order.quantity}</td>
+                    <td>
+                        <button class="edit-btn">修改</button>
+                        <button class="delete-btn">刪除</button>
+                    </td>
+                </tr>
+            `;
+        }
+    });
+</script>
+{% endblock %}
+

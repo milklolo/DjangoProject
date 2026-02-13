@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Product List{% endblock %}
+
+{% block content %}
+<!--=========================================-->
+<h2>Product List</h2>
+
+<form id="product-form">
+    <input type="hidden" id="product-id" name="id"> <!-- 狀態 -->
+    <input type="text" id="product-name" name="name" required>
+    <input type="number" id="product-price" name="price" required>
+    <button type="submit" id="edit" style="display:none;">確認修改</button>
+    <button type="button" id="cancel-edit" style="display:none;">取消修改</button>
+    <button type="submit" id="add">Add Product</button>
+</form>
+
+
+<table id="product-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</table>
+<div id="result"></div>
+
+{% endblock %}
+
+
+<!--=========================-->
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    loadProduct();
+
+    $('#product-form').submit(function(e) {
+        e.preventDefault();
+        let name = $("input[name='name']").val();
+        let price = $("input[name='price']").val();
+        let id = $('#product-id').val();
+        let url = '/products/';
+        let method = 'POST';
+        let productdata = {
+            name : name,
+            price :price
+        };
+        if (id){
+            url = `/products/${id}/`;
+            method = 'PUT';
+        }
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: "application/json",
+            data: JSON.stringify(productdata),
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            success: function(data) {if(id){
+                $(`tr[data-id="${id}"] td:nth-child(2)`).text(data.name);
+                $(`tr[data-id="${id}"] td:nth-child(3)`).text(data.price);
+                $("#result").text("更新成功：" + data.name);
+                $('#product-id').val('');           // 清空隱藏 ID
+                $('#product-form')[0].reset();
+                $('#cancel-edit').click(); // 重置表單
+            } else {
+                // 新增成功：原本的邏輯
+                $("#result").text("新增成功：" + data.name);
+                $("#product-table tbody").append(addRow(data));
+                $('#product-form')[0].reset();
+            }},
+            error: function(err) {
+                console.log(err);
+            }
+        });
+    });
+        // 修改
+    $('#product-table').on('click', '.edit-btn', function() {
+        const row = $(this).closest('tr');
+        const id = row.data('id');
+        const name = row.find('td:nth-child(2)').text();
+        const price = row.find('td:nth-child(3)').text();
+        // 1. 將資料填入表單
+        $('#product-id').val(id);
+        $("input[name='name']").val(name);
+        $("input[name='price']").val(price);
+        // 2. 切換按鈕文字與顯示取消按鈕
+        $('#submit-btn').text('更新資料');
+        $('#cancel-edit').show();
+        $('#edit').show();
+        $('#add').hide();
+    });
+    // 點擊取消修改
+    $('#cancel-edit').click(function() {
+        $('#product-id').val('');
+        $('#product-price').val('');
+        $('#product-form')[0].reset();
+        $('#submit-btn').text('Add product');
+        $('#edit').hide();
+        $('#add').show();
+        $(this).hide();
+    });
+    // 刪除
+    $('#product-table').on('click', '.delete-btn', function() {
+        const row = $(this).closest('tr');  // 獲取當前行
+        const productId = row.data('id');  // 從 data-id 屬性中獲取訂單 ID
+        if (!productId) {
+            console.log("未能找到 ID，無法刪除");
+            return;
+        }
+        $.ajax({
+            url: `/products/${productId}/`,  // 使用訂單 ID 組成正確的 URL
+            method: 'DELETE',
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            success: function() {
+                row.remove();  // 刪除表格中的該行
+            },
+            error: function(err) {
+                console.log(err.responseJSON);
+            }
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function loadProduct() {
+        $.get('/products/', function(data) {console.log(data);$("#product-table tbody").empty();data.forEach(function(product) {
+            $("#product-table tbody").append(addRow(product));
+        });});}
+
+
+    function addRow(product) {
+        return `
+                <tr data-id="${product.id}"><!-- 記得要加id，CRUD用的 -->
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>
+                        <button class="edit-btn">修改</button>
+                        <button class="delete-btn">刪除</button>
+                    </td>
+                </tr>
+          `;
+    }
+
+
+
+});
+
+</script>
+{% endblock %}
