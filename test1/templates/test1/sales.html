@@ -88,7 +88,6 @@
             $('#sales-id').val(id);
             $("input[name='name']").val(name);
             // 2. 切換按鈕文字與顯示取消按鈕
-            $('#submit-btn').text('更新銷售');
             $('#cancel-edit').show();
             $('#edit').show();
             $('#add').hide();
@@ -98,7 +97,6 @@
         $('#cancel-edit').click(function() {
             $('#sales-id').val('');
             $('#sales-form')[0].reset();
-            $('#submit-btn').text('Add sales');
             $('#edit').hide();
             $('#add').show();
             $(this).hide();

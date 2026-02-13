@@ -7,9 +7,8 @@
 <h2>Orders List</h2>
 
 <form id="orders-form">
-
+    <input type="hidden" id="orders-id" name="id"> <!-- 狀態 -->
     <input type="date" name="orders_date" required>
-
     <select name="product" id="product-select" required>
         {% for p in products %}
         <option value="{{ p.id }}">{{ p.name }}</option>
@@ -24,7 +23,9 @@
 
     <input type="number" name="quantity" required>
 
-    <button type="submit">Add Order</button>
+    <button type="submit" id="add">Add Order</button>
+    <button type="submit" id="edit" style="display:none;">確認修改</button>
+    <button type="button" id="cancel-edit" style="display:none;">取消修改</button>
 
 </form>
 
@@ -69,6 +70,7 @@
             let product = $("select[name='product']").val();
             let sales = $("select[name='sales']").val();
             let quantity = $("input[name='quantity']").val();
+            let id = $('#orders-id').val();
 
             let orderData = {
                 order_date: order_date,
@@ -76,6 +78,11 @@
                 sales: sales,
                 quantity: quantity
             };
+            // 如果有 ID，代表是修改模式
+            if (id) {
+                url = `/orders/${id}/`; // 指向特定物件的 URL
+                method = 'PUT';        // 或者用 'PATCH'
+            }
 
             $.ajax({
                 url: url,  // 發送請求的 URL
@@ -85,11 +92,22 @@
                 headers: {
                     "X-CSRFToken": getCookie("csrftoken")  // 添加 CSRF token
                 },
-                success: function(data) {
+                success: function(data) {if(id){
+                    // 修改成功：更新該行資料
+                    $(`tr[data-id="${id}"] td:nth-child(2)`).text(data.order_date);
+                    $(`tr[data-id="${id}"] td:nth-child(3)`).text(data.product_name);//這樣才不會顯示UUID
+                    $(`tr[data-id="${id}"] td:nth-child(4)`).text(data.sales_name);
+                    $(`tr[data-id="${id}"] td:nth-child(5)`).text(data.quantity);
+                    $("#result").text("更新成功：" + data.name);
+                    $('#orders-id').val('');           // 清空隱藏 ID
+                    $('#orders-form')[0].reset();
+                    $('#cancel-edit').click(); // 重置表單
+
+                }else {
                     $("#result").text("新增成功：" + data.order_date);  // 顯示成功訊息
                     $("#orders-table tbody").append(addRow(data));  // 在表格中新增一行
                     $('#orders-form')[0].reset();  // 清空表單內容
-                },
+                }},
                 error: function(err) {
                     console.log(err.responseJSON);  // 如果出錯，打印錯誤信息
                 }
@@ -119,7 +137,38 @@
                 }
             });
         });
+        //修改
+        $('#orders-table').on('click', '.edit-btn', function() {
+            const row = $(this).closest('tr');
 
+            const id = row.data('id');
+            const orderDate = row.find('td:nth-child(2)').text();
+            const productId = row.data('product');
+            const salesId = row.data('sales');
+            const quantity = row.find('td:nth-child(5)').text();
+            $('#orders-id').val(id);
+
+            // 填入表單
+            $("input[name='orders_date']").val(orderDate);
+            $("select[name='product']").val(productId);
+            $("select[name='sales']").val(salesId);
+            $("input[name='quantity']").val(quantity);
+            $('#cancel-edit').show();
+            $('#edit').show();
+            $('#add').hide();
+
+            console.log("目前修改的ID:", id);
+        });
+
+
+        // 點擊取消修改
+        $('#cancel-edit').click(function() {
+            $('#quantity').val('');
+            $('#orders-form')[0].reset();
+            $('#edit').hide();
+            $('#add').show();
+            $(this).hide();
+        });
 
 
         // 獲取 CSRF Token
@@ -174,7 +223,9 @@
         // 列出所有表
         function addRow(order) {
             return `
-                <tr data-id="${order.id}"><!-- 記得要加id，CRUD用的 -->
+                     <tr data-id="${order.id}"
+                         data-product="${order.product}"
+                         data-sales="${order.sales}"><!-- 記得要加id，CRUD用的 -->
                     <td>${order.id}</td>
                     <td>${order.order_date}</td>
                     <td>${order.product_name}</td>
