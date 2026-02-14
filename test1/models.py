@@ -18,11 +18,11 @@ class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text='uuid')
     order_date = models.DateField()
     product = models.ForeignKey(
-        Product, on_delete=models.CASCADE
+        Product, on_delete=models.PROTECT
     )
 
     sales = models.ForeignKey(
-        Sales, on_delete=models.CASCADE
+        Sales, on_delete=models.PROTECT
     )
     quantity = models.IntegerField()
     def __str__(self):
