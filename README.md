@@ -1,14 +1,14 @@
 DRF test
 poetry 建django
 
-# 產品 (產品id, 產品名稱, 產品售價)
-# 業務人員 (業務id, 業務名)
-# 訂單 (訂單編號, 訂單日期, 產品id, 數量, 業務id)
-# 產品管理介面
-# 業務人員管理介面
-# 訂單管理介面
+#產品 (產品id, 產品名稱, 產品售價)
+#業務人員 (業務id, 業務名)
+#訂單 (訂單編號, 訂單日期, 產品id, 數量, 業務id)
+#產品管理介面
+#業務人員管理介面
+#訂單管理介面
 
-# 新專案 django poetry
+#新專案 django poetry
 pyproject.toml 
 
 requires-python = "^3.11"
