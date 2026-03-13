@@ -4,26 +4,64 @@
     <meta charset="UTF-8">
     <title>{% block title %}My App{% endblock %}</title>
     <style>
-        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #eee; }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #eee;
+        }
+
+        .wrapper {
+            display: flex; /* 啟用 Flexbox */
+            min-height: 100vh; /* 讓容器至少跟螢幕一樣高 */
+        }
+
+        .sidebar {
+            flex: 0 0 15%; /* 寬度佔 20% */
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+
+            /* 讓內部的文字置中的關鍵 */
+            display: flex;
+            flex-direction: column; /* 如果有多行文字，讓它們垂直排列 */
+            justify-content: center; /* 垂直居中 */
+            align-items: center; /* 水平居中 */
+
+            min-height: 100vh; /* 確保側邊欄跟螢幕一樣高，置中才看得出來 */
+            text-align: center; /* 確保多行文字內部的對齊 */
+        }
+
+        .main-content {
+            flex: 1; /* 佔據剩餘的 80% 空間 */
+            padding: 20px;
+        }
     </style>
 </head>
-<body>
+<body class="wrapper">
 
-<nav>
-    <a href="{% url 'products-page' %}">Products</a> |
-    <a href="{% url 'sales-page' %}">Sales</a> |
-    <a href="{% url 'orders-page1' %}">Orders</a>
-</nav>
+<aside class="sidebar">
+    {% block sidebar %}
+        {% include "test1/sidebar.html" %}
+    {% endblock sidebar %}
+</aside>
 
+<main class="main-content">
 <hr>
-
-<div>
     {% block content %}
     {% endblock %}
-</div>
+</main>
 
 </body>
 </html>
-{% block scripts %}{% endblock %}
+{% block scripts %}
+    {#    {% include "test1/orders.js" %}#}
+{% endblock %}

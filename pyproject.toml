@@ -5,10 +5,11 @@ description = ""
 authors = [
     {name = "milklolo",email = "33389126+milklolo@users.noreply.github.com"}
 ]
-requires-python = "^3.11"
+requires-python = "^3.12"
 dependencies = [
     "django (>=4.2,<5.0)",
-    "djangorestframework (>=3.16.1,<4.0.0)"
+    "djangorestframework (>=3.16.1,<4.0.0)",
+    "pyproject (>=1!0.1.2,<1!0.2.0)",
 ]
 
 

@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}orders List{% endblock %}
+
+{% block content %}
+    <!--=========================================-->
+    <h2>orders List</h2>
+
+    <!-- Row -->
+    <div class="row row-sm">
+        <div class="col-lg-12">
+            <div class="card custom-card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-primary" id="new" data-bs-toggle="modal"
+                                data-bs-target="#NewAndEditModal" title="新增">
+                        </button>
+                    </div>
+                    <div class="table-responsive ">
+                        <table id="datatable"
+                               class="table table-bordered dt-responsive nowrap table-striped align-middle hover"
+                               style="width:100%">
+                            <thead class="table-head">
+                            <tr class="css-table-row">
+                                <th scope="col">id</th>
+                                <th scope="col">order_date</th>
+                                <th scope="col">products_name</th>
+                                <th scope="col">products_price</th>
+                                <th scope="col">sales_name</th>
+                                <th scope="col">quantity</th>
+                                <th scope="col">op</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Row -->
+
+    <!-- NEW and EDIT Modal -->
+    <div class="modal fade" id="NewAndEditModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="ordersForm" class="form-group" role="form">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="modal_title"></h3>
+                        <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-12 form-group">
+                                <label for="id">訂單編號</label>
+                                <input type="text" class="form-control" id="id" name="id" readonly
+                                       placeholder="系統自動產生">
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <label for="order_date">訂單日期</label>
+                                <input type="date" class="form-control" id="order_date" name="order_date" required>
+                            </div>
+                            <select class="form-control form-select" id="product_name" name="product">
+                                <option value="" selected disabled>請選擇商品</option>
+                                {% for p in products %}
+                                    <option value="{{ p.id }}" data-price="{{ p.price }}">
+                                        {{ p.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="col-md-12">
+                                <label for="product_price">商品價格</label>
+                                <input type="text" id="product_price" class="form-control" readonly
+                                       placeholder="自動帶入單價">
+                            </div>
+                            <div class="col-md-12">
+                                <label for="sales_name">銷售人員</label>
+                                <select class="form-control form-select" id="sales_name" name="sales">
+                                    <option value="" selected disabled>請選擇銷售</option>
+                                    {% for s in sales %}
+                                        <option value="{{ s.id }}">{{ s.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <label for="quantity">商品數量</label><span class="text-danger ml-1" style="color:red"> *</span>
+                                <input type="number" class="form-control" id="quantity" name="quantity"
+                                       min="1"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="請輸入數量"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="type" name="type" value="">
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn ripple btn-primary"><i class="bx bx-save"></i> 存檔</button>
+                        <button class="btn ripple btn-light" data-bs-dismiss="modal" type="button"><i
+                                class="ri-close-line"></i> 取消
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- END NEW and EDIT Modal -->
+    <!-- Delete Modal -->
+    <div class="modal fade" id="DeleteModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="delete_modal_title"></h4>
+                    <small class="modal-subtitle"></small>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="lead">你確認要刪除：<strong id="delid" class="text-danger"></strong> 嗎？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn ripple btn-danger" id="delete">
+                        <i class="bx bx-trash"></i> 刪除
+                    </button>
+                    <button type="button" class="btn ripple btn-light" data-bs-dismiss="modal">
+                        <i class="ri-close-line"></i> 取消
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END Delete Modal -->
+
+    <div id="result"></div>
+
+{% endblock %}
+
+
+<!--=========================-->
+{% block scripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- sweetalert2 js-->
+    <script src="{% static 'libs/sweetalert2/dist/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/inits/sweetalert2.init.js' %}"></script>
+    <!--  Datatable js -->
+    <script src="{% static 'libs/datatable/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'libs/datatable/js/dataTables.responsive.min.js' %}"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {#    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>#}
+    <script src="{% static 'js/orders.js' %}"></script>
+{% endblock %}
+

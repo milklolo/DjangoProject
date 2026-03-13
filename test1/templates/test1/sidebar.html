@@ -1,0 +1,19 @@
+{% load static %}
+{% block sidebar %}
+    <div id="scrollbar">
+        <div class="container-fluid">
+            <div id="two-column-menu">
+            </div>
+            <h2 class="menu-title"><span>Menu</span></h2>
+            <ul class="navbar-nav" id="navbar-nav">
+                <li class="nav-item"><a href="{% url 'products-page-n' %}" class="nav-link">Products</a>
+                </li>
+                <li class="nav-item"><a href="{% url 'sales-page-n' %}" class="nav-link">sales</a>
+                </li>
+                <li class="nav-item"><a href="{% url 'orders-page-n' %}" class="nav-link">orders</a>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+{% endblock sidebar %}
