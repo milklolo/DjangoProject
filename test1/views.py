@@ -1,22 +1,19 @@
 from django.shortcuts import render
 
-from test1.models import Product,Sales,Order
+from test1.models import product,sales,order
 
 
 def product_frontend(request):
-    products = Product.objects.all()
+    products = product.objects.all()
     return render(request, "test1/products.html",{"products": products})
 
 def product_frontend_n(request):
-    products = Product.objects.all()
-    return render(request, "test1/products_n.html",{"products": products})
+    return render(request, "test1/products_n.html")
 
 def sales_frontend(request):
-    sales = Sales.objects.all()
     return render(request, "test1/sales.html")
 
 def sales_frontend_n(request):
-    sales = Sales.objects.all()
     return render(request, "test1/sales_n.html")
 
 def order_frontend1(request):
@@ -30,19 +27,19 @@ def order_frontend1(request):
     return render(request, "test1/orders1.html")
 
 def order_frontend(request):
-    orders = Order.objects.all()
-    products = Product.objects.all()
-    sales = Sales.objects.all()
+    orders = order.objects.all()
+    products = product.objects.all()
+    saleso = sales.objects.all()
     return render(request, "test1/orders.html",
                   {"orders": orders,
                    "products": products,
-                   "sales": sales})
+                   "sales": saleso})
 
 def order_frontend_n(request):
-    orders = Order.objects.all()
-    products = Product.objects.all()
-    sales = Sales.objects.all()
+    orders = order.objects.all()
+    products = product.objects.all()
+    saleso = sales.objects.all()
     return render(request, "test1/orders_n.html",
                   {"orders": orders,
                    "products": products,
-                   "sales": sales})
+                   "sales": saleso})

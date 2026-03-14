@@ -21,7 +21,7 @@ let baseUrl = '/orders/';
 let table = $('#datatable').DataTable({
     'processing': true,
     'serverSide': false,
-    'searching': false,
+    'searching': true,
     'scrollCollapse': false,
     'language': {url: jsonUrl},
     'ajax': {
@@ -38,9 +38,9 @@ let table = $('#datatable').DataTable({
         {"data": "sales_name"},
         {"data": "quantity"},
         {
-        "data": null,
-        "render": function (data, type, row) {
-            return `
+            "data": null,
+            "render": function (data, type, row) {
+                return `
                 <div class="op">
                     <button type="button" class="edit-item-btn btn btn-sm btn-primary" 
                             data-bs-toggle="modal" data-bs-target="#NewAndEditModal">
@@ -51,7 +51,7 @@ let table = $('#datatable').DataTable({
                         刪除
                     </button>
                 </div>`;
-        }
+            }
         }
     ],
     'order': [[1, 'asc']]
@@ -127,8 +127,8 @@ $(document).ready(function () {
             },
             error: function (jqXHR) {
                 let errorText = jqXHR.status + " " + jqXHR.statusText;
-            Toast.fire({icon: 'error', title: '刪除失敗: ' + errorText});
-            console.error("後端報錯詳情：", jqXHR.responseText);
+                Toast.fire({icon: 'error', title: '刪除失敗: ' + errorText});
+                console.error("後端報錯詳情：", jqXHR.responseText);
             }
         });
     });
@@ -142,6 +142,41 @@ $(document).ready(function () {
         $('#sales_name').val('');
         $('#type').val('NEW');
         $('#modal_title').html(`<i class="fa fa-plus modal-icon text-primary"> 新增${modal_title}</i>`);
+    });
+
+    // 新增商品列
+    $('#add-product').on('click', function () {
+
+        let row = `
+    <div class="product-row row mb-2">
+        <div class="col-md-5">
+            <select class="form-control form-select product-select" name="product[]">
+                <option value="" selected disabled>請選擇商品</option>
+                ${$('#product_name').html()}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <input type="text" id="product_price" class="form-control" readonly
+                                       placeholder="自動帶入單價">
+        </div>
+
+        <div class="col-md-3">
+           <input type="number" class="form-control" id="quantity" name="quantity"
+                                       min="1"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                       placeholder="請輸入數量"
+                                       required>
+        </div>
+
+        <div class="col-md-1">
+            <button type="button" class="btn btn-danger remove-product">X</button>
+        </div>
+    </div>
+    `;
+
+        $('#product-container').append(row);
+
     });
 });
 

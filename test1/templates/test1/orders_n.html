@@ -5,7 +5,7 @@
 {% block content %}
     <!--=========================================-->
     <h2>orders List</h2>
-
+    <br>
     <!-- Row -->
     <div class="row row-sm">
         <div class="col-lg-12">
@@ -59,30 +59,27 @@
                                        placeholder="系統自動產生">
                             </div>
                             <div class="col-md-12 form-group">
-                                <label for="order_date">訂單日期</label>
+                                <label for="order_date">訂單日期</label><span class="text-danger ml-1"
+                                                                              style="color:red"> *</span>
                                 <input type="date" class="form-control" id="order_date" name="order_date" required>
                             </div>
-                            <select class="form-control form-select" id="product_name" name="product">
-                                <option value="" selected disabled>請選擇商品</option>
-                                {% for p in products %}
-                                    <option value="{{ p.id }}" data-price="{{ p.price }}">
-                                        {{ p.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                            <div class="col-md-12 form-group">
+                                <label for="order_date">商品</label><span class="text-danger ml-1"
+                                                                          style="color:red"> *</span>
+                                <select class="form-control form-select" id="product_name" name="product">
+                                    <option value="" selected disabled>請選擇商品</option>
+                                    <span class="text-danger ml-1" style="color:red"> *</span>
+                                    {% for p in products %}
+                                        <option value="{{ p.id }}" data-price="{{ p.price }}">
+                                            {{ p.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select></div>
                             <div class="col-md-12">
-                                <label for="product_price">商品價格</label>
+                                <label for="product_price">商品價格</label><span class="text-danger ml-1"
+                                                                                 style="color:red"> *</span>
                                 <input type="text" id="product_price" class="form-control" readonly
                                        placeholder="自動帶入單價">
-                            </div>
-                            <div class="col-md-12">
-                                <label for="sales_name">銷售人員</label>
-                                <select class="form-control form-select" id="sales_name" name="sales">
-                                    <option value="" selected disabled>請選擇銷售</option>
-                                    {% for s in sales %}
-                                        <option value="{{ s.id }}">{{ s.name }}</option>
-                                    {% endfor %}
-                                </select>
                             </div>
                             <div class="col-md-12 form-group">
                                 <label for="quantity">商品數量</label><span class="text-danger ml-1" style="color:red"> *</span>
@@ -91,6 +88,16 @@
                                        oninput="this.value = this.value.replace(/[^0-9]/g, '');"
                                        placeholder="請輸入數量"
                                        required>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="sales_name">銷售人員</label><span class="text-danger ml-1"
+                                                                              style="color:red"> *</span>
+                                <select class="form-control form-select" id="sales_name" name="sales">
+                                    <option value="" selected disabled>請選擇銷售</option>
+                                    {% for s in sales %}
+                                        <option value="{{ s.id }}">{{ s.name }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
                     </div>

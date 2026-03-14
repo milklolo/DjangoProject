@@ -92,3 +92,6 @@ views的return要加"test1/products.html",{"products": products}
 #以上是環境及基礎網頁
 
 #如果要在一個頁面抓多個資料表的話views.py要加要的資料表
+
+=======
+
