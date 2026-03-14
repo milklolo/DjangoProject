@@ -191,10 +191,8 @@ $(document).ready(function () {
         // 找到當前這一個 row 裡面的價格欄位
         $(this).closest('.product-item-row').find('.product-price').val(price || '');
     });
-
     // 新增商品列
     $('#add-product').on('click', function () {
-
         let row = `
     <div class="product-row row mb-2">
         <div class="col-md-5">
@@ -203,12 +201,10 @@ $(document).ready(function () {
                 ${$('#product_name').html()}
             </select>
         </div>
-
         <div class="col-md-3">
             <input type="text" id="product_price" class="form-control" readonly
                                        placeholder="自動帶入單價">
         </div>
-
         <div class="col-md-3">
            <input type="number" class="form-control" id="quantity" name="quantity"
                                        min="1"
@@ -216,7 +212,6 @@ $(document).ready(function () {
                                        placeholder="請輸入數量"
                                        required>
         </div>
-
         <div class="col-md-1">
             <button type="button" class="btn btn-danger remove-product">X</button>
         </div>

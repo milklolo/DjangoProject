@@ -94,4 +94,12 @@ views的return要加"test1/products.html",{"products": products}
 #如果要在一個頁面抓多個資料表的話views.py要加要的資料表
 
 =======
+一筆訂單多項商品
+serializer
+加入OrderItemSerializer讓多筆的東西有地方放
+order加入update create
+
+viewset
+OrderViewSet加入update create
+
 
