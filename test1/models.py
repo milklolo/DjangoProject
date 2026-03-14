@@ -14,16 +14,26 @@ class sales(models.Model):
     def __str__(self):
         return self.name
 
+# class order(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text='uuid')
+#     order_date = models.DateField()
+#     product = models.ForeignKey(
+#         product, on_delete=models.PROTECT
+#     )
+#
+#     sales = models.ForeignKey(
+#         sales, on_delete=models.PROTECT
+#     )
+#     quantity = models.IntegerField()
+#     def __str__(self):
+#         return f"Order {self.id}"
 class order(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text='uuid')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order_date = models.DateField()
-    product = models.ForeignKey(
-        product, on_delete=models.PROTECT
-    )
+    sales = models.ForeignKey(sales, on_delete=models.PROTECT)
+    # 移除原本的 product 和 quantity
 
-    sales = models.ForeignKey(
-        sales, on_delete=models.PROTECT
-    )
-    quantity = models.IntegerField()
-    def __str__(self):
-        return f"Order {self.id}"
+class orderItem(models.Model):
+    order = models.ForeignKey(order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(product, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField(default=1)

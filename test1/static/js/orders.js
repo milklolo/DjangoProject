@@ -32,24 +32,38 @@ let table = $('#datatable').DataTable({
     'columns': [
         {"data": "id"},
         {"data": "order_date"},
-        {"data": "product_name"}, //serializer
-        {"data": "product_price"},
-        // {"data": "sales_id"},
+        {
+            "data": "items",
+            "render": function (data) {
+                // 在列表中顯示摘要：商品A (等 3 項)
+                if (!data || data.length === 0) return "無商品";
+                let mainProduct = data[0].product_name;
+                return data.length > 1 ? `${mainProduct} <span class="badge bg-secondary">等 ${data.length} 項</span>` : mainProduct;
+            }
+        },
+        {
+            "data": "items",
+            "render": function (data) {
+                // 計算總金額 (單價 * 數量)
+                let total = data.reduce((sum, item) => sum + (parseFloat(item.product_price) * item.quantity), 0);
+                return total.toLocaleString();
+            }
+        },
         {"data": "sales_name"},
-        {"data": "quantity"},
+        {
+            "data": "items",
+            "render": function (data) {
+                // 顯示總數量
+                return data.reduce((sum, item) => sum + item.quantity, 0);
+            }
+        },
         {
             "data": null,
             "render": function (data, type, row) {
                 return `
                 <div class="op">
-                    <button type="button" class="edit-item-btn btn btn-sm btn-primary" 
-                            data-bs-toggle="modal" data-bs-target="#NewAndEditModal">
-                        修改
-                    </button>
-                    <button type="button" class="remove-item-btn btn btn-sm btn-danger" 
-                            data-bs-toggle="modal" data-bs-target="#DeleteModal">
-                        刪除
-                    </button>
+                    <button type="button" class="edit-item-btn btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#NewAndEditModal">修改</button>
+                    <button type="button" class="remove-item-btn btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#DeleteModal">刪除</button>
                 </div>`;
             }
         }
@@ -61,12 +75,14 @@ let table = $('#datatable').DataTable({
 let id = 0;
 const modal_title = '訂單'
 $('#new').html(`<i class="ri-add-line"></i> 新增${modal_title}`)
-
+let rowTemplate = '';
 $(document).ready(function () {
+    rowTemplate = $('#product-row-template').html();
     // 點選修改或刪除
     $('#datatable tbody').on('click', '.edit-item-btn, .remove-item-btn', function () {
         let rowElement = $(this).closest('tr');
         let data = table.row(rowElement).data();
+        rowTemplate = $('#product-row-template').html();
 
         if (!data) return; // 防錯處理
         id = data['id'];
@@ -75,15 +91,24 @@ $(document).ready(function () {
             // 修改
             $('#id').val(data['id']);
             $('#order_date').val(data['order_date']);
-            $('#product_name').val(data['product_id']);
-            $('#product_price').val(data['product_price']);
-            $('#sales_name').val(data['sales_id']);
-            // $('#sales_name').val(data['sales_name']);
-            $('#quantity').val(data['quantity']);
+            $('#sales_name').val(data['sales']); // 填入銷售人員 ID
+
+            // 重要：清空容器並根據 items 數量重新產生 row
+            $('#product-items-container').empty();
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => {
+                    let $newRow = $(rowTemplate);
+                    $newRow.find('.product-select').val(item.product);
+                    $newRow.find('.product-price').val(item.product_price);
+                    $newRow.find('input[name="quantity[]"]').val(item.quantity);
+                    $('#product-items-container').append($newRow);
+                });
+            }
+
             $('#type').val('EDIT');
             $('#modal_title').html(`<i class="fa fa-edit modal-icon modify-modal-text"> 修改${modal_title}</i>`);
         } else {
-            // 刪除
+            // 刪除部分保持不變...
             $('#delete_modal_title').html(`<i class="fa fa-trash-alt modal-icon text-danger"> 刪除${modal_title}</i>`);
             $('#delid').text(data['id']);
         }
@@ -135,13 +160,36 @@ $(document).ready(function () {
 
     // 新增
     $('#new').on('click', function () {
-        $('#id, #product_price, #quantity').val('');
+        $('#id').val('');
         let today = new Date().toISOString().split('T')[0];
         $('#order_date').val(today);
-        $('#product_name').val('');
         $('#sales_name').val('');
+
+        // 初始化：只留一個空白的商品列
+        $('#product-items-container').empty().append(rowTemplate);
+
         $('#type').val('NEW');
         $('#modal_title').html(`<i class="fa fa-plus modal-icon text-primary"> 新增${modal_title}</i>`);
+    });
+
+    // 增加商品列按鈕 (使用你原本喜歡的 append 方式，但改用 template 較乾淨)
+    $('#add-product-item').on('click', function () {
+        $('#product-items-container').append(rowTemplate);
+    });
+
+    // 刪除單一商品列
+    $(document).on('click', '.remove-product-item', function () {
+        if ($('.product-item-row').length > 1) {
+            $(this).closest('.product-item-row').remove();
+        }
+    });
+
+    // 價格連動：因為是動態產生的，必須用 $(document).on('change', ...)
+    $(document).on('change', '.product-select', function () {
+        const selectedOption = $(this).find('option:selected');
+        const price = selectedOption.data('price');
+        // 找到當前這一個 row 裡面的價格欄位
+        $(this).closest('.product-item-row').find('.product-price').val(price || '');
     });
 
     // 新增商品列
@@ -177,24 +225,5 @@ $(document).ready(function () {
 
         $('#product-container').append(row);
 
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    const productSelect = document.getElementById('product_name');
-    const priceInput = document.getElementById('product_price');
-
-    productSelect.addEventListener('change', function () {
-        const selectedOption = productSelect.options[productSelect.selectedIndex];
-
-        // 取得 data-price 的值
-        const price = selectedOption.getAttribute('data-price');
-
-        // 自動設定價格欄位
-        if (price) {
-            priceInput.value = price;
-        } else {
-            priceInput.value = '';
-        }
     });
 });
