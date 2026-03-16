@@ -6,7 +6,6 @@
     <!--=========================================-->
     <h2>Product List</h2>
     <br>
-
     <!-- Row -->
     <div class="row row-sm">
         <div class="col-lg-12">
@@ -26,6 +25,7 @@
                                 <th scope="col">id</th>
                                 <th scope="col">Product_name</th>
                                 <th scope="col">price</th>
+                                <th scope="col">img</th>
                                 <th scope="col">op</th>
                             </tr>
                             </thead>
@@ -65,11 +65,27 @@
 
                             <div class="col-md-12 form-group">
                                 <label For="price">商品價格</label><span class="text-danger ml-1"
-                                                                            style="color:red"> *</span>
-                                <input type="number" class="form-control" id="product-price" name="price" min="1"
+                                                                         style="color:red"> *</span>
+                                <input type="number" class="form-control" id="price" name="price" min="1"
                                        onInput="this.value = this.value.replace(/[^0-9]/g, '');"
                                        placeholder="請輸入商品價格"
                                        required/>
+                                       required/>
+                            </div>
+                            <div class="mb-3">
+                                <label for="image1" class="form-label">商品圖片</label>
+                                <div id="image-preview-container" class="mb-2"
+                                     style="display: none; position: relative; width: fit-content;">
+                                    <p class="small text-muted">目前圖片：</p>
+                                    <img id="current-image-preview" src="" alt="預覽"
+                                         style="max-width: 150px; border: 1px solid #ddd;">
+                                    <button type="button" id="clear-image-btn" class="btn btn-danger btn-sm"
+                                            style="position: absolute; top: 30px; right: -10px; border-radius: 50%; padding: 2px 6px;">
+                                        &times;
+                                    </button>
+                                    <input type="hidden" id="clear_image" name="clear_image" value="false">
+                                </div>
+                                <input type="file" class="form-control" id="image1" name="image1" accept="image/*">
                             </div>
                         </div>
                     </div>

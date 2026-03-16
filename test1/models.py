@@ -5,6 +5,7 @@ class product(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text='uuid')
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    image1 = models.ImageField(upload_to='avatars/', blank=True, null=True)
     def __str__(self):
         return self.name
 
@@ -31,7 +32,6 @@ class order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order_date = models.DateField()
     sales = models.ForeignKey(sales, on_delete=models.PROTECT)
-    # 移除原本的 product 和 quantity
 
 class orderItem(models.Model):
     order = models.ForeignKey(order, related_name='items', on_delete=models.CASCADE)

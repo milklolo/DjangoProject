@@ -20,14 +20,14 @@ let baseUrl = '/sales/';
 
 let table = $('#datatable').DataTable({
     'processing': true,
-    'serverSide': false,
-    'searching': false,
+    'serverSide': true,
+    'searching': true,
     'scrollCollapse': false,
     'language': {url: jsonUrl},
     'ajax': {
         url: baseUrl,
         type: 'GET',
-        dataSrc: '',
+        dataSrc: 'data',
     },
     'columns': [
         {"data": "id"},

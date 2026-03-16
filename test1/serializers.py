@@ -6,6 +6,9 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = product
         fields = '__all__'
+        extra_kwargs = {
+            'image1': {'required': False, 'allow_null': True}
+        }
 
 class SalesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,10 +32,21 @@ class SalesSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2, read_only=True)
-
+    product_image = serializers.SerializerMethodField()
     class Meta:
         model = orderItem
-        fields = ['product', 'product_name', 'product_price', 'quantity']
+        fields = '__all__'
+        read_only_fields = ('order',) #這樣驗證時就不會要求提供 order ID，資料就能順利進入 validated_data
+
+    def get_product_image(self, obj):
+        # 關鍵防呆：先檢查 product 是否有 image1，再檢查 image1 是否有檔案
+        try:
+            if obj.product and obj.product.image1 and hasattr(obj.product.image1, 'url'):
+                return obj.product.image1.url
+        except ValueError:
+            # 如果資料庫有欄位但檔案不存在，會跳到這裡
+            return None
+        return None
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -42,7 +56,13 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = order
-        fields = ['id', 'order_date', 'sales', 'sales_name', 'items']
+        fields = '__all__'
+
+    def get_product_image(self, obj):
+        # 取得商品關聯的圖片路徑
+        if obj.product.image1:
+            return obj.product.image1.url
+        return None
 
     def create(self, validated_data):
         # 處理新增邏輯

@@ -102,4 +102,53 @@ order加入update create
 viewset
 OrderViewSet加入update create
 
+model
+加一個item來連結多筆訂單
+======
+照片
+裝pillow
 
+settings
+import os
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+model
+image1 = models.ImageField(upload_to='avatars/', blank=True, null=True)
+給一個資料夾
+
+url
+from django.conf import settings
+from django.conf.urls.static import static
+urlpatterns = [...] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+js
+processData: false,  // 告訴 jQuery 不要處理傳送的資料
+contentType: false,  // 告訴 jQuery 不要設定 Content-Type 標頭（讓瀏覽器自動處理）
+======
+serverside:true
+viewset
+把那些list後面的加進去
+改Choices的欄位名稱
+Q的東西
+注意Serializer要改
+
+js
+>>'serverSide': true,
+>>'searching': true,
+'ajax': {
+        url: baseUrl,
+        type: 'GET',
+  >>>>> dataSrc: 'data',
+    },
+
+======
+可以裝gemini cli
+
+給一個app下載的連結
+一次性6位數驗證碼
+產生一個一次性連結
+icbt passwordresttoken
+連結會連到前測問券
+新用戶會直接開一個新的前測問券
+rabbitmq dlq
