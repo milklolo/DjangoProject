@@ -20,45 +20,50 @@ let baseUrl = '/orders/';
 
 let table = $('#datatable').DataTable({
     'processing': true,
-    'serverSide': false,
+    'serverSide': true,
     'searching': true,
     'scrollCollapse': false,
     'language': {url: jsonUrl},
     'ajax': {
         url: baseUrl,
         type: 'GET',
-        dataSrc: '',
+        // DataTables 在 serverSide: true 時，預設傳送的參數已經包含 draw, start, length
+        // 但如果你的後端是用 results 裝資料，這裡要改
+        dataSrc: function (json) {
+            return json.data; // 對應後端 result["data"]
+        }
     },
     'columns': [
-        {"data": "id"},
-        {"data": "order_date"},
+        { "data": "id" },
+        { "data": "order_date" },
         {
             "data": "items",
+            "orderable": false, // 這些計算欄位無法直接在後端排序，設為 false
             "render": function (data) {
-                // 在列表中顯示摘要：商品A (等 3 項)
                 if (!data || data.length === 0) return "無商品";
                 let mainProduct = data[0].product_name;
                 return data.length > 1 ? `${mainProduct} <span class="badge bg-secondary">等 ${data.length} 項</span>` : mainProduct;
             }
         },
+        { "data": "sales_name" }, // 索引 3
         {
             "data": "items",
+            "orderable": false,
             "render": function (data) {
-                // 計算總金額 (單價 * 數量)
-                let total = data.reduce((sum, item) => sum + (parseFloat(item.product_price) * item.quantity), 0);
-                return total.toLocaleString();
-            }
-        },
-        {"data": "sales_name"},
-        {
-            "data": "items",
-            "render": function (data) {
-                // 顯示總數量
                 return data.reduce((sum, item) => sum + item.quantity, 0);
             }
         },
         {
+            "data": "items",
+            "orderable": false,
+            "render": function (data) {
+                let total = data.reduce((sum, item) => sum + (parseFloat(item.product_price) * item.quantity), 0);
+                return total.toLocaleString();
+            }
+        },
+        {
             "data": null,
+            "orderable": false,
             "render": function (data, type, row) {
                 return `
                 <div class="op">
@@ -68,7 +73,7 @@ let table = $('#datatable').DataTable({
             }
         }
     ],
-    'order': [[1, 'asc']]
+    'order': [[1, 'desc']] // 預設依日期降冪排序
 });
 
 <!-- CRUD -->

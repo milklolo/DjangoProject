@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from .models import product, sales, order
+from .models import product, sales, order, orderItem
 from .serializers import ProductSerializer, SalesSerializer, OrderSerializer
 from rest_framework.response import Response
 from django.db import transaction
@@ -204,6 +204,67 @@ class SalesViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = order.objects.all()
     serializer_class = OrderSerializer
+
+    # 1. 加入 list 方法，對接 DataTables
+    def list(self, request, **kwargs):
+        try:
+            # 傳入 request.query_params (QueryDict)
+            dParameter = self.__query_by_args(request.query_params)
+            serializer = OrderSerializer(dParameter["items"], many=True)
+            result = {
+                "draw": dParameter["draw"],
+                "recordsTotal": dParameter["total"],
+                "recordsFiltered": dParameter["count"],
+                "data": serializer.data,
+            }
+            return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            # 這裡建議印出詳細錯誤到終端機，方便 debug
+            print(f"Server-side Error: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def __query_by_args(self, query_params) -> dict:
+        # 1. 定義排序欄位對應
+        ORDER_COLUMN_CHOICES = {
+            "0": "id",
+            "1": "order_date",
+            "3": "sales_name",  # 根據你 models 的 sales 關聯欄位名稱調整
+        }
+
+        # 2. 安全獲取參數 (使用 .get 而非 [0]，避免 QueryDict list 報錯)
+        draw = int(query_params.get("draw", 1))
+        length = int(query_params.get("length", 10))
+        start = int(query_params.get("start", 0))
+        search_value = query_params.get("search[value]", "")
+        order_column_index = query_params.get("order[0][column]", "0")
+        order_dir = query_params.get("order[0][dir]", "asc")
+
+        # 3. 處理排序
+        order_column = ORDER_COLUMN_CHOICES.get(order_column_index, "id")
+        if order_dir == "desc":
+            order_column = "-" + order_column
+
+        # 4. 基礎 QuerySet (建議加上 select_related 優化效能)
+        queryset = order.objects.select_related('sales').all()
+        total = queryset.count()
+
+        # 5. 搜尋過濾
+        # 外表的話 model__變數__icontains
+        if search_value:
+            queryset = queryset.filter(
+                Q(id__icontains=search_value) |
+                Q(order_date__icontains=search_value) |
+                Q(order_sales__icontains=search_value) |
+                Q(sales__name__icontains=search_value) |
+                Q(items__product__name__icontains=search_value)
+            )
+
+        count = queryset.count()
+
+        # 6. 分頁
+        queryset = queryset.order_by(order_column)[start: start + length]
+
+        return {"items": queryset, "count": count, "total": total, "draw": draw}
 
     def create(self, request, *args, **kwargs):
         # 1. 取得前端 serialize() 送過來的多個陣列
